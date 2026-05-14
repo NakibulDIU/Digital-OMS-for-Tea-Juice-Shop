@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      String   @default("customer")
+  createdAt DateTime @default(now())
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameBn      String?
+  description String?
+  price       Float
+  imageUrl    String?
+  category    String   @default("tea")
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id              Int          @id @default(autoincrement())
+  orderNumber    String       @unique
+  customerName   String
+  customerContact String
+  customerAddress String?
+  totalAmount    Float
+  status         String       @default("pending")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  items          OrderItem[]
+  bill           Bill?
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  menuItemId Int
+  quantity   Int
+  unitPrice  Float
+  subtotal   Float
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model Bill {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @unique
+  billNumber  String   @unique
+  totalAmount Float
+  generatedAt DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id])
+}
